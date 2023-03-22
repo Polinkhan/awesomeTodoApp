@@ -1,20 +1,33 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import HeroScreen from "./App/Screens/HeroScreen";
+import { useFonts } from "expo-font";
+import Navigator from "./App/Navigators/Navigator";
+import * as Notifications from "expo-notifications";
+import * as TaskManager from "expo-task-manager";
+import * as Application from "expo-application";
+
+console.log(Application.androidId);
+
+const BACKGROUND_NOTIFICATION_TASK = "BACKGROUND-NOTIFICATION-TASK";
+
+TaskManager.defineTask(
+  BACKGROUND_NOTIFICATION_TASK,
+  ({ data, error, executionInfo }) => {
+    if (error) {
+      console.log("error occurred");
+    }
+    if (data) {
+      console.log("data-----", data);
+    }
+  }
+);
+
+Notifications.registerTaskAsync(BACKGROUND_NOTIFICATION_TASK);
 
 export default function App() {
-  return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
-  );
+  const [fontsLoaded] = useFonts({
+    Pop: require("./App/assets/fonts/static/Poppins-Regular.ttf"),
+    BoldPop: require("./App/assets/fonts/static/Poppins-SemiBold.ttf"),
+    LightPop: require("./App/assets/fonts/static/Poppins-Light.ttf"),
+  });
+  return fontsLoaded && <Navigator />;
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
