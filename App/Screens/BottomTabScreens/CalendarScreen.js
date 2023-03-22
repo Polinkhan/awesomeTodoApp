@@ -4,7 +4,6 @@ import IconButton from "../../Components/IconButton";
 import { Ionicons } from "@expo/vector-icons";
 import { BoldText } from "../../Components/Text";
 import { Calendar, CalendarList, Agenda } from "react-native-calendars";
-import Notification from "../../Hooks/Notification";
 
 const CalendarScreen = () => {
   const [delayComplete, setDelayComplete] = useState(false);
@@ -18,14 +17,7 @@ const CalendarScreen = () => {
   return (
     <View style={styles.container}>
       <Header />
-      {delayComplete && (
-        <Calender
-          onDayPress={(day) => {
-            console.log("selected day", day);
-          }}
-        />
-      )}
-      {/* <Notification /> */}
+      {delayComplete && <CalendarComponent />}
     </View>
   );
 };
@@ -44,7 +36,7 @@ const Header = () => {
   );
 };
 
-const Calender = () => {
+const CalendarComponent = () => {
   const [selectedDate, setSelectedDate] = useState();
   const today = new Date().toISOString().substring(0, 10);
   return (
