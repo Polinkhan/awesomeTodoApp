@@ -8,16 +8,6 @@ import { BoldText, RegularText } from "../../Components/Text";
 import { LinearGradient } from "expo-linear-gradient";
 import CustomProgressBar from "../../Components/CustomProgressBar";
 import TaskDetailsBar from "../../Components/TaskDetailsBar";
-import * as Notifications from "expo-notifications";
-import * as Application from "expo-application";
-
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: false,
-    shouldSetBadge: false,
-  }),
-});
 
 const HomeScreen = () => {
   return (
