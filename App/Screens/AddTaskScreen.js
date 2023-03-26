@@ -1,40 +1,56 @@
 import {
   FlatList,
   ScrollView,
-  StatusBar,
   StyleSheet,
-  TouchableOpacity,
+  ToastAndroid,
   View,
 } from "react-native";
 import React, { useState } from "react";
 import IconButton from "../Components/IconButton";
-import { Entypo, FontAwesome, SimpleLineIcons } from "@expo/vector-icons";
-import { BoldText, RegularText } from "../Components/Text";
+import { Entypo, SimpleLineIcons } from "@expo/vector-icons";
+import { BoldText } from "../Components/Text";
 import CustomInput from "../Components/CustomInput";
 import CustomButton from "../Components/CustomButton";
-import DateTimePicker from "@react-native-community/datetimepicker";
+import useFirebaseFirestore from "../Hooks/useFirebaseFirestore";
+import DatePicker from "../Components/DatePicker";
+import Required from "../Components/Required";
+import TimePicker from "../Components/TimePicker";
 
 const AddTaskScreen = ({ navigation }) => {
-  const [taskName, setTaskName] = useState();
+  const [taskName, setTaskName] = useState(null);
   const [category, setCategory] = useState(0);
-  const [date, setDate] = useState();
-  const [time, setTime] = useState({ start: undefined, end: undefined });
-  const [description, setDescription] = useState();
+  const [date, setDate] = useState(null);
+  const [time, setTime] = useState({ start: null, end: null });
+  const [description, setDescription] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const { addNewTask } = useFirebaseFirestore();
 
   const handleSubmit = () => {
-    console.log({
+    const data = {
       taskName,
       category: Data[category].name,
       date,
       time,
       description,
-    });
+      created: new Date().getTime(),
+    };
+    if (taskName && date && time.start && time.end) {
+      setLoading(true);
+      addNewTask(data)
+        .then(() => {
+          ToastAndroid.show("New Task Added", ToastAndroid.SHORT);
+          navigation.goBack();
+        })
+        .catch((e) => ToastAndroid.show(e, ToastAndroid.SHORT))
+        .finally(() => setLoading(false));
+    } else ToastAndroid.show("Field cannot be empty", ToastAndroid.SHORT);
   };
 
   return (
     <View style={styles.container}>
+      <Header navigation={navigation} />
       <ScrollView showsVerticalScrollIndicator={false}>
-        <Header navigation={navigation} />
         <TaskName setTaskName={setTaskName} />
         <TaskSelect category={category} setCategory={setCategory} />
         <DatePicker date={date} setDate={setDate} />
@@ -42,19 +58,30 @@ const AddTaskScreen = ({ navigation }) => {
           <TimePicker
             title={"Start Time"}
             label={"start"}
-            time={time.start || "Set Time"}
+            date={date}
+            time={time.start}
             setTime={setTime}
           />
           <TimePicker
             title={"End Time"}
             label={"end"}
-            time={time.end || "Set Time"}
+            date={date}
+            time={time.end}
             setTime={setTime}
           />
         </View>
         <Description setDescription={setDescription} />
-        <CustomButton onPress={handleSubmit}>Create Task</CustomButton>
       </ScrollView>
+      <View>
+        <CustomButton
+          isLoading={loading}
+          isLoadingText={"Creating new task"}
+          onPress={handleSubmit}
+          style={{ marginTop: 30, elevation: 0 }}
+        >
+          Create Task
+        </CustomButton>
+      </View>
     </View>
   );
 };
@@ -78,7 +105,10 @@ const Header = ({ navigation }) => {
 const TaskName = ({ setTaskName }) => {
   return (
     <View style={{ marginBottom: 30 }}>
-      <BoldText style={{ fontSize: 18 }}>Task Name</BoldText>
+      <BoldText style={{ fontSize: 18 }}>
+        Task Name
+        <Required />
+      </BoldText>
       <CustomInput
         placeholder={"Name"}
         onChangeText={(txt) => setTaskName(txt)}
@@ -116,9 +146,9 @@ const TaskSelect = ({ category, setCategory }) => {
           renderItem={({ item }) => (
             <CustomButton
               style={{
-                paddingVertical: 12,
                 backgroundColor: category === item.id ? "#3787eb" : "#eeeeee",
                 marginLeft: item.id && 16,
+                elevation: 0,
               }}
               textStyle={{ color: category === item.id ? "white" : "black" }}
               onPress={() => setCategory(item.id)}
@@ -134,67 +164,6 @@ const TaskSelect = ({ category, setCategory }) => {
           style={{ paddingLeft: 10 }}
         />
       </View>
-    </View>
-  );
-};
-
-const DatePicker = ({ date, setDate }) => {
-  const [show, setShow] = useState(false);
-
-  const OnChange = (e) => {
-    setShow(false);
-    const time = e.nativeEvent.timestamp;
-    const newDate = new Date(time).toISOString().substring(0, 10);
-    setDate(newDate);
-  };
-
-  return (
-    <View style={{ marginBottom: 30 }}>
-      <BoldText style={{ fontSize: 18 }}>Date & Time</BoldText>
-      <TouchableOpacity
-        style={styles.CustomButton}
-        onPress={() => setShow(true)}
-      >
-        <View style={styles.PickerBox}>
-          <RegularText style={{ color: "gray" }}>
-            {date || "Select Date"}
-          </RegularText>
-          <FontAwesome name="calendar" size={20} color="gray" />
-        </View>
-      </TouchableOpacity>
-      {show && (
-        <DateTimePicker mode="date" value={new Date()} onChange={OnChange} />
-      )}
-    </View>
-  );
-};
-
-const TimePicker = ({ title, label, time, setTime }) => {
-  const [show, setShow] = useState(false);
-
-  const OnChange = (e) => {
-    setShow(false);
-    const time = e.nativeEvent.timestamp;
-    const ms = e.nativeEvent.timestamp % 60000;
-    const newTime = new Date(time - ms).toLocaleTimeString();
-    setTime((prev) => ({ ...prev, [label]: newTime }));
-  };
-
-  return (
-    <View style={{ flex: 0.47 }}>
-      <BoldText style={{ fontSize: 18 }}>{title}</BoldText>
-      <TouchableOpacity
-        style={[styles.CustomButton, { marginTop: 4 }]}
-        onPress={() => setShow(true)}
-      >
-        <View style={styles.PickerBox}>
-          <RegularText style={{ color: "gray" }}>{time}</RegularText>
-          <Entypo name="chevron-thin-down" size={16} color="gray" />
-        </View>
-      </TouchableOpacity>
-      {show && (
-        <DateTimePicker mode="time" value={new Date()} onChange={OnChange} />
-      )}
     </View>
   );
 };
@@ -218,32 +187,13 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 30,
     backgroundColor: "white",
-    paddingTop: StatusBar.currentHeight + 30,
+    // paddingTop: StatusBar.currentHeight + 30,
   },
   header: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     marginBottom: 30,
-  },
-  CustomButton: {
-    borderWidth: 1,
-    padding: 16,
-    borderRadius: 12,
-    borderColor: "#dddddd",
-    marginTop: 12,
-  },
-  TaskSelectWrap: {
-    flexDirection: "row",
-    flex: 1,
-    // flexWrap: "wrap",
-    justifyContent: "space-around",
-    // backgroundColor: "red",
-  },
-  PickerBox: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
   },
   TimePickerContainer: {
     marginBottom: 30,
@@ -253,10 +203,10 @@ const styles = StyleSheet.create({
 });
 
 const Data = [
-  { id: 0, name: "Design" },
+  { id: 0, name: "Learning" },
   { id: 1, name: "Development" },
   { id: 2, name: "Research" },
-  { id: 4, name: "Design" },
-  { id: 5, name: "Development" },
-  { id: 6, name: "Research" },
+  { id: 4, name: "Deep Work" },
+  { id: 5, name: "Shallow Work" },
+  { id: 6, name: "Other" },
 ];

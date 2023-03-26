@@ -21,6 +21,7 @@ const BottomNavigator = ({ navigation }) => {
         headerTitleAlign: "center",
         tabBarActiveTintColor: color.primary,
         tabBarHideOnKeyboard: true,
+
         // tabBarActiveBackgroundColor: "red",
       }}
     >
@@ -60,8 +61,9 @@ const BottomNavigator = ({ navigation }) => {
             width: 70,
             backgroundColor: color.primary,
             borderRadius: 999,
-            borderWidth: 6,
+            borderWidth: 4,
             borderColor: "white",
+            // elevation: 1,
           },
           tabBarButton: (props) => <TouchableOpacity {...props} />,
         }}

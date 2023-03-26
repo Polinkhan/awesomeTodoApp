@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, StatusBar } from "react-native";
+import { View, Text, StyleSheet, StatusBar, Button } from "react-native";
 import React, { useEffect, useState } from "react";
 import IconButton from "../../Components/IconButton";
 import { Ionicons } from "@expo/vector-icons";
@@ -60,7 +60,7 @@ export default CalendarScreen;
 
 const styles = StyleSheet.create({
   container: {
-    paddingTop: StatusBar.currentHeight + 30,
+    // paddingTop: StatusBar.currentHeight + 30,
     padding: 30,
     flex: 1,
     backgroundColor: "white",

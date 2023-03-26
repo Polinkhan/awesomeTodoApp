@@ -10,13 +10,15 @@ import { RegularText } from "./Text";
 import { SimpleLineIcons } from "@expo/vector-icons";
 import { color } from "../Colors/color";
 
-const MenuItem = ({ item }) => {
+const MenuItem = (props) => {
   const [isEnabled, setIsEnabled] = useState(false);
   const toggleSwitch = () => setIsEnabled((previousState) => !previousState);
 
+  const { item, ...event } = props;
+
   if (item.name === "Location" || item.name === "Notification") {
     return (
-      <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+      <View style={styles.container}>
         <TouchableOpacity style={styles.container} onPress={toggleSwitch}>
           <View style={{ flexDirection: "row", alignItems: "center" }}>
             <Image source={item.img} style={styles.img} />
@@ -35,7 +37,7 @@ const MenuItem = ({ item }) => {
   }
 
   return (
-    <TouchableOpacity style={styles.container}>
+    <TouchableOpacity style={styles.container} {...event}>
       <View style={{ flexDirection: "row", alignItems: "center" }}>
         <Image source={item.img} style={styles.img} />
         <RegularText style={{ fontSize: 18 }}>{item.name}</RegularText>

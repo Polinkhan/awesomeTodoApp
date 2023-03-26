@@ -1,4 +1,4 @@
-import { View, ScrollView } from "react-native";
+import { View, ScrollView, Button } from "react-native";
 import React, { useEffect, useRef, useState } from "react";
 import { StatusBar } from "react-native";
 import { StyleSheet } from "react-native";
@@ -8,20 +8,25 @@ import { BoldText, RegularText } from "../../Components/Text";
 import { LinearGradient } from "expo-linear-gradient";
 import CustomProgressBar from "../../Components/CustomProgressBar";
 import TaskDetailsBar from "../../Components/TaskDetailsBar";
+import useFirebaseFirestore from "../../Hooks/useFirebaseFirestore";
+import { SheetManager, SheetProvider } from "react-native-actions-sheet";
+import "../../Components/ActionSheet/sheets";
 
-const HomeScreen = () => {
+const HomeScreen = ({ navigation }) => {
   return (
-    <LinearGradient
-      colors={["#ffffff", "#f2f2f2"]}
-      style={{ flex: 1 }}
-      end={{ x: 0, y: 1 }}
-    >
-      <View style={styles.container}>
-        <Header />
-        <Summery />
-        <Task />
-      </View>
-    </LinearGradient>
+    <SheetProvider>
+      <LinearGradient
+        colors={["#ffffff", "#f2f2f2"]}
+        style={{ flex: 1 }}
+        end={{ x: 0, y: 1 }}
+      >
+        <View style={styles.container}>
+          <Header />
+          <Summery />
+          <Task navigation={navigation} />
+        </View>
+      </LinearGradient>
+    </SheetProvider>
   );
 };
 
@@ -75,17 +80,15 @@ const Summery = () => {
   );
 };
 
-const Task = () => {
+const Task = ({ navigation }) => {
+  const { Tasks } = useFirebaseFirestore();
+  const OnLongPress = (task) => {
+    SheetManager.show("option", { payload: task });
+  };
+
   return (
     <View style={{ flex: 1 }}>
-      <View
-        style={{
-          flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: 30,
-        }}
-      >
+      <View style={styles.header}>
         <BoldText style={{ fontSize: 24 }}>Today's Task</BoldText>
         <RegularText style={{ fontSize: 16, color: "gray" }}>
           See All
@@ -93,13 +96,14 @@ const Task = () => {
       </View>
       <View style={{ flex: 1 }}>
         <ScrollView showsVerticalScrollIndicator={false}>
-          <TaskDetailsBar />
-          <TaskDetailsBar />
-          <TaskDetailsBar />
-          <TaskDetailsBar />
-          <TaskDetailsBar />
-          <TaskDetailsBar />
-          <TaskDetailsBar />
+          {Tasks.map((task, i) => (
+            <TaskDetailsBar
+              key={i}
+              data={task}
+              onPress={() => navigation.navigate("taskDetails", { data: task })}
+              onLongPress={() => OnLongPress(task)}
+            />
+          ))}
         </ScrollView>
       </View>
     </View>
@@ -110,8 +114,9 @@ export default HomeScreen;
 
 const styles = StyleSheet.create({
   container: {
-    paddingTop: StatusBar.currentHeight + 30,
+    // paddingTop: StatusBar.currentHeight + 30,
     padding: 30,
+    paddingBottom: 0,
     flex: 1,
     // backgroundColor: "white",
   },

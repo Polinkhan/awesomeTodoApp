@@ -1,13 +1,30 @@
 import { LinearGradient } from "expo-linear-gradient";
-import { Button, Image, StyleSheet, View } from "react-native";
-import React from "react";
+import { StyleSheet, ToastAndroid, View } from "react-native";
+import React, { useState } from "react";
 import CustomButton from "../Components/CustomButton";
 import { BoldText, RegularText } from "../Components/Text";
 import { color } from "../Colors/color";
+import useGoogleSignIn from "../Hooks/useGoogleSignIn";
+import FastImage from "react-native-fast-image";
+import auth from "@react-native-firebase/auth";
+import { GoogleSignin } from "@react-native-google-signin/google-signin";
 
 const heroImg = require("../assets/images/Hero.png");
 
-const HeroScreen = ({ navigation }) => {
+const HeroScreen = () => {
+  const [loading, setLoading] = useState(false);
+  const { CurrentUser, onGoogleButtonPress } = useGoogleSignIn();
+
+  const handleSignIn = async () => {
+    setLoading(true);
+    await onGoogleButtonPress()
+      .catch(async (e) => {
+        e.code !== "12501" && GoogleSignin.revokeAccess();
+        ToastAndroid.show(e.message, ToastAndroid.LONG);
+      })
+      .finally(() => setLoading(false));
+  };
+
   return (
     <LinearGradient
       colors={[color.primary, "#ffffff"]}
@@ -16,12 +33,11 @@ const HeroScreen = ({ navigation }) => {
     >
       <View style={styles.container}>
         <View style={styles.imgBody}>
-          <Image style={styles.img} source={heroImg} />
-          {/* <FastImage
+          <FastImage
             style={styles.img}
             source={heroImg}
             resizeMode={FastImage.resizeMode.contain}
-          /> */}
+          />
         </View>
         <View style={styles.body}>
           <View>
@@ -36,11 +52,11 @@ const HeroScreen = ({ navigation }) => {
         <View style={{ flexDirection: "row" }}>
           <CustomButton
             style={{ flex: 1 }}
-            onPress={() => {
-              navigation.navigate("bottom");
-            }}
+            isLoading={loading}
+            isLoadingText={"Singing in ..."}
+            onPress={handleSignIn}
           >
-            Lets Start
+            Sign In With Google
           </CustomButton>
         </View>
       </View>
